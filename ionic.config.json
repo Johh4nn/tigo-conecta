@@ -1,0 +1,7 @@
+{
+  "name": "tigo-conecta",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
