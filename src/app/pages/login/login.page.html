@@ -1,0 +1,85 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Iniciar Sesión - Tigo Conecta</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="login-container">
+    <!-- Logo -->
+    <div class="logo-container">
+      <ion-icon name="phone-portrait-outline" style="font-size: 80px; color: var(--ion-color-primary);"></ion-icon>
+      <h1>Tigo Conecta</h1>
+      <p>Ingresa tus credenciales</p>
+    </div>
+
+    <!-- Formulario -->
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+      <ion-item lines="full">
+        <ion-label position="floating">Correo electrónico</ion-label>
+        <ion-input 
+          type="email" 
+          formControlName="email"
+          autocomplete="email"
+        ></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+        Ingresa un correo válido
+      </ion-note>
+
+      <ion-item lines="full">
+        <ion-label position="floating">Contraseña</ion-label>
+        <ion-input 
+          [type]="showPassword ? 'text' : 'password'" 
+          formControlName="password"
+          autocomplete="current-password"
+        ></ion-input>
+        <ion-button 
+          slot="end" 
+          fill="clear" 
+          (click)="togglePassword()"
+        >
+          <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-note color="danger" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+        Mínimo 6 caracteres
+      </ion-note>
+
+      <ion-button 
+        expand="block" 
+        type="submit"
+        [disabled]="loginForm.invalid"
+        style="margin-top: 20px;"
+      >
+        Iniciar Sesión
+      </ion-button>
+    </form>
+
+    <!-- Credenciales de prueba -->
+    <ion-card style="margin-top: 30px;">
+      <ion-card-header>
+        <ion-card-title style="font-size: 16px;">🔑 Credenciales de Prueba</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p><strong>Asesor:</strong></p>
+        <p>Email: asesor@tigo.com</p>
+        <p>Password: 123456</p>
+        <br>
+        <p><strong>Cliente:</strong></p>
+        <p>Email: cliente@tigo.com</p>
+        <p>Password: 123456</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botón ver catálogo público -->
+    <ion-button 
+      expand="block" 
+      fill="outline" 
+      (click)="goToCatalogo()"
+      style="margin-top: 20px;"
+    >
+      Ver catálogo sin iniciar sesión
+    </ion-button>
+  </div>
+</ion-content>
