@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home-asesor"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Contrataciones Pendientes</ion-title>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-spinner *ngIf="loading"></ion-spinner>
+
+  <ion-card *ngFor="let c of contrataciones">
+
+    <ion-card-header>
+      <ion-card-title>
+        📱 {{ c.planes_moviles?.nombre_comercial || 'Plan desconocido' }}
+      </ion-card-title>
+
+      <ion-badge color="warning">
+        {{ c.estado?.toUpperCase() }}
+      </ion-badge>
+    </ion-card-header>
+
+    <ion-card-content>
+
+      <p><b>👤 Cliente:</b> {{ c.perfiles?.nombre_completo || 'Sin nombre' }}</p>
+      <p><b>📧 Email:</b> {{ c.perfiles?.email || 'Sin email' }}</p>
+
+      <p><b>💵 Precio:</b> ${{ c.planes_moviles?.precio }}</p>
+      <p><b>📅 Fecha:</b> {{ c.created_at | date:'short' }}</p>
+
+      <p *ngIf="c.numero_linea"><b>📞 Número línea:</b> {{ c.numero_linea }}</p>
+      <p *ngIf="c.direccion_entrega"><b>📦 Dirección:</b> {{ c.direccion_entrega }}</p>
+
+    </ion-card-content>
+
+    <ion-item>
+      <ion-button color="success" slot="start"
+        (click)="cambiarEstado(c, 'aprobada')">
+        ✔ Aprobar
+      </ion-button>
+
+      <ion-button color="danger" slot="end"
+        (click)="cambiarEstado(c, 'rechazada')">
+        ✖ Rechazar
+      </ion-button>
+    </ion-item>
+
+  </ion-card>
+
+  <ion-text *ngIf="!loading && contrataciones.length === 0">
+    <p class="ion-text-center">⚠ No hay contrataciones pendientes</p>
+  </ion-text>
+
+</ion-content>

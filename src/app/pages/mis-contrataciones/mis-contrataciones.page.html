@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home-user"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Mis Contrataciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- SPINNER CARGANDO -->
+  <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+
+  <!-- LISTA DE CONTRATACIONES -->
+  <ion-card *ngFor="let c of contrataciones">
+
+    <ion-card-header>
+
+      <ion-card-title>
+        📱 {{ c.planes_moviles?.nombre_comercial || 'Plan desconocido' }}
+      </ion-card-title>
+
+      <ion-badge
+        [color]="getEstadoColor(c.estado)"
+        style="font-size:14px; padding:4px 10px;"
+      >
+        {{ c.estado?.toUpperCase() }}
+      </ion-badge>
+
+    </ion-card-header>
+
+    <ion-card-content>
+
+      <p><b>💵 Precio:</b> ${{ c.planes_moviles?.precio }}</p>
+
+      <p>
+        <b>📅 Fecha:</b>
+        {{ c.created_at | date:'short' }}
+      </p>
+
+      <p *ngIf="c.numero_linea">
+        <b>📞 Número:</b> {{ c.numero_linea }}
+      </p>
+
+      <p *ngIf="c.direccion_entrega">
+        <b>📦 Dirección entrega:</b> {{ c.direccion_entrega }}
+      </p>
+
+      <p *ngIf="c.notas">
+        <b>📝 Notas:</b> {{ c.notas }}
+      </p>
+
+    </ion-card-content>
+  </ion-card>
+
+  <!-- MENSAJE SIN CONTRATACIONES -->
+  <ion-text *ngIf="!loading && contrataciones.length === 0">
+    <p class="ion-text-center">⚠ No tienes contrataciones aún</p>
+  </ion-text>
+
+</ion-content>

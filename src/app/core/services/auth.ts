@@ -26,6 +26,9 @@ export class AuthService {
     this.initAuthListener();
   }
 
+  /** =========================================================
+   *  LISTENER DE AUTENTICACIÓN
+   * ========================================================= */
   private initAuthListener() {
     this.supabaseService.currentUser$.subscribe(async (user) => {
       if (user) {
@@ -36,76 +39,134 @@ export class AuthService {
     });
   }
 
-  // Iniciar sesión
+  /** =========================================================
+   *  LOGIN
+   * ========================================================= */
   async signIn(email: string, password: string): Promise<{ error: any }> {
     try {
       const { error } = await this.supabaseService.getClient()
         .auth.signInWithPassword({ email, password });
 
       if (error) throw error;
-
       return { error: null };
+
     } catch (error) {
-      console.error('Error en signIn:', error);
+      console.error('❌ Error en signIn:', error);
       return { error };
     }
   }
 
-  // Registrarse
-  async signUp(email: string, password: string, nombreCompleto: string): Promise<{ error: any }> {
+  /** =========================================================
+   *  REGISTRO
+   * ========================================================= */
+  async signUp(email: string, password: string, nombreCompleto: string, telefono?: string): Promise<{ error: any }> {
     try {
+
       const { data, error } = await this.supabaseService.getClient()
         .auth.signUp({
           email,
           password,
           options: {
             data: {
-              nombre_completo: nombreCompleto
+              nombre_completo: nombreCompleto,
+              telefono: telefono ?? ''
             }
           }
         });
 
       if (error) throw error;
 
+      /** ⚠ Intento de crear perfil cliente ↓
+       *  (si falla, el TRIGGER de Supabase lo hará) */
+      if (data?.user) {
+        await this.supabaseService.getClient()
+          .from("perfiles")
+          .insert({
+            id: data.user.id,
+            email,
+            nombre_completo: nombreCompleto,
+            telefono: telefono ?? "",
+            rol: "usuario_registrado"
+          })
+          .throwOnError();
+      }
+
       return { error: null };
+
     } catch (error) {
-      console.error('Error en signUp:', error);
+      console.error("❌ Error en signUp:", error);
       return { error };
     }
   }
 
-  // Cerrar sesión
+  /** =========================================================
+   *  LOGOUT
+   * ========================================================= */
   async signOut(): Promise<void> {
     await this.supabaseService.getClient().auth.signOut();
     this.profileSubject.next(null);
     this.router.navigate(['/login']);
   }
 
-  // Cargar perfil del usuario
-  private async loadUserProfile(userId: string): Promise<void> {
-    const { data, error } = await this.supabaseService.getClient()
-      .from('perfiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+  /** =========================================================
+   *  🔥 OBTENER PERFIL COMPLETO DEL USUARIO LOGUEADO
+   * ========================================================= */
+  async getProfile(): Promise<UserProfile | null> {
+    return new Promise(resolve => {
+      const sub = this.profile$.subscribe(p => {
+        if (p) {
+          resolve(p);
+          sub.unsubscribe();
+        }
+      });
+      setTimeout(() => resolve(null), 1000);
+    });
+  }
 
-    if (!error && data) {
-      console.log('Perfil cargado:', data);
-      this.profileSubject.next(data as UserProfile);
+  /** =========================================================
+   *  📥 CARGAR PERFIL EN LA APP
+   * ========================================================= */
+  private async loadUserProfile(userId: string): Promise<void> {
+    try {
+      const { data, error } = await this.supabaseService.getClient()
+        .from('perfiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('❌ Error al cargar perfil:', error);
+        this.profileSubject.next(null);
+        return;
+      }
+
+      if (!data) {
+        console.warn(`⚠ No existe perfil para: ${userId}`);
+        this.profileSubject.next(null);
+        return;
+      }
+
+      console.log("✔ Perfil cargado:", data);
+      this.profileSubject.next(data);
+
+    } catch (err) {
+      console.error('❌ Excepción cargando perfil:', err);
+      this.profileSubject.next(null);
     }
   }
 
-  // Obtener perfil actual
+  /** =========================================================
+   *  🚀 OBTENER PERFIL ACTUAL (SINCRONO)
+   * ========================================================= */
   getCurrentProfile(): UserProfile | null {
     return this.profileSubject.value;
   }
 
-  // Verificar si es asesor
+  /** ROLES */
   isAsesor(): boolean {
     return this.profileSubject.value?.rol === 'asesor_comercial';
   }
 
-  // Verificar si es usuario registrado
   isUsuarioRegistrado(): boolean {
     return this.profileSubject.value?.rol === 'usuario_registrado';
   }

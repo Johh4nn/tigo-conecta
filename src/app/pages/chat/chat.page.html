@@ -1,0 +1,108 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home-user"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Chat</ion-title>
+    
+    <!-- Estado de carga en el header -->
+    <ion-spinner *ngIf="loading" slot="end" class="header-spinner"></ion-spinner>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content #content>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="error" class="error-container">
+    <ion-card color="danger">
+      <ion-card-content>
+        <ion-icon name="warning-outline" slot="start"></ion-icon>
+        {{ error }}
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="loading && messages.length === 0" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando mensajes...</p>
+  </div>
+
+  <!-- Sin mensajes -->
+  <div *ngIf="!loading && messages.length === 0 && !error" class="empty-state">
+    <ion-icon name="chatbubble-outline" class="empty-icon"></ion-icon>
+    <h3>No hay mensajes aún</h3>
+    <p>Sé el primero en enviar un mensaje</p>
+  </div>
+
+  <!-- Lista de mensajes -->
+  <div class="messages-container" *ngIf="!loading && messages.length > 0">
+
+    <div *ngFor="let m of messages"
+         class="message"
+         [ngClass]="{ 
+           'mine': isMine(m),
+           'theirs': !isMine(m),
+           'system': m.tipo === 'sistema'
+         }">
+
+      <!-- Mensajes del sistema -->
+      <div *ngIf="m.tipo === 'sistema'" class="system-message">
+        <div class="system-bubble">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          {{ m.mensaje }}
+        </div>
+        <div class="system-time">
+          {{ m.created_at | date:'shortTime' }}
+        </div>
+      </div>
+
+      <!-- Mensajes normales -->
+      <div *ngIf="m.tipo !== 'sistema'" class="user-message">
+        <div class="sender" *ngIf="!isMine(m)">
+          {{ m.perfiles?.nombre_completo || 'Usuario' }}
+        </div>
+
+        <div class="bubble">
+          {{ m.mensaje }}
+          <div class="status" *ngIf="isMine(m)">
+            <ion-icon 
+              [name]="m.leido ? 'checkmark-done' : 'checkmark'"
+              [color]="m.leido ? 'primary' : 'medium'">
+            </ion-icon>
+          </div>
+        </div>
+
+        <div class="time">
+          {{ m.created_at | date:'shortTime' }}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-item>
+      <ion-input
+        placeholder="Escribe un mensaje..."
+        [(ngModel)]="newMessage"
+        (keyup.enter)="send()"
+        [disabled]="loading || !!error"
+        class="message-input">
+      </ion-input>
+
+      <ion-button 
+        slot="end"
+        (click)="send()"
+        [disabled]="!newMessage.trim() || loading || !!error"
+        class="send-button">
+        <ion-icon name="send" slot="start"></ion-icon>
+        Enviar
+      </ion-button>
+    </ion-item>
+  </ion-toolbar>
+</ion-footer>

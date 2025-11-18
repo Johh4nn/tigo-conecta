@@ -1,0 +1,182 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home-asesor"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Gestionar Planes</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="newPlan()">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Nuevo
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-spinner *ngIf="loading"></ion-spinner>
+
+  <!-- FORMULARIO -->
+  <div *ngIf="showForm">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          {{ editingId ? 'Editar Plan' : 'Nuevo Plan' }}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <form [formGroup]="form" (ngSubmit)="save()">
+
+          <ion-item>
+            <ion-label position="stacked">Nombre Comercial *</ion-label>
+            <ion-input formControlName="nombre_comercial"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Precio *</ion-label>
+            <ion-input type="number" formControlName="precio"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Segmento *</ion-label>
+            <ion-select formControlName="segmento" placeholder="Selecciona">
+              <ion-select-option value="Básico">Básico</ion-select-option>
+              <ion-select-option value="Medio">Medio</ion-select-option>
+              <ion-select-option value="Premium">Premium</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Público objetivo</ion-label>
+            <ion-input formControlName="publico_objetivo"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Datos móviles *</ion-label>
+            <ion-input formControlName="datos_moviles" placeholder="Ej: 5 GB mensuales"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Minutos voz *</ion-label>
+            <ion-input formControlName="minutos_voz" placeholder="Ej: 100 minutos"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">SMS *</ion-label>
+            <ion-input formControlName="sms" placeholder="Ej: Ilimitados"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Velocidad 4G</ion-label>
+            <ion-input formControlName="velocidad_4g" placeholder="Ej: Hasta 50 Mbps"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Velocidad 5G</ion-label>
+            <ion-input formControlName="velocidad_5g" placeholder="Ej: Hasta 300 Mbps"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Redes sociales (separadas por coma)</ion-label>
+            <ion-input formControlName="redes_sociales"
+                       placeholder='Facebook, Instagram, TikTok'></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>WhatsApp ilimitado</ion-label>
+            <ion-toggle slot="end" formControlName="whatsapp_ilimitado"></ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Llamadas internacionales</ion-label>
+            <ion-input formControlName="llamadas_internacionales" placeholder="Ej: $0.15/min"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Roaming</ion-label>
+            <ion-input formControlName="roaming" placeholder="Ej: 500 MB incluidos"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Imagen (JPG/PNG, máx 5MB)</ion-label>
+            <input type="file" accept="image/png,image/jpeg" (change)="onFileSelected($event)" />
+          </ion-item>
+
+          <div *ngIf="previewUrl" class="ion-padding">
+            <img [src]="previewUrl" style="max-width:100%; max-height: 300px; border-radius:10px; object-fit: cover;" />
+          </div>
+
+          <ion-item>
+            <ion-label>Activo</ion-label>
+            <ion-toggle slot="end" formControlName="activo"></ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>Destacado</ion-label>
+            <ion-toggle slot="end" formControlName="destacado"></ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Orden</ion-label>
+            <ion-input type="number" formControlName="orden"></ion-input>
+          </ion-item>
+
+          <ion-button expand="block" type="submit" [disabled]="form.invalid" color="success">
+            <ion-icon name="save" slot="start"></ion-icon>
+            Guardar
+          </ion-button>
+          <ion-button expand="block" fill="clear" (click)="cancelForm()">
+            Cancelar
+          </ion-button>
+
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- LISTA DE PLANES -->
+  <ion-list *ngIf="!showForm && planes.length > 0">
+    <ion-list-header>
+      <ion-label>Mis Planes ({{ planes.length }})</ion-label>
+    </ion-list-header>
+    
+    <ion-item *ngFor="let plan of planes">
+      <ion-thumbnail slot="start">
+        <img [src]="plan.imagen_url || 'assets/icon/favicon.png'">
+      </ion-thumbnail>
+
+      <ion-label>
+        <h2>{{ plan.nombre_comercial }}</h2>
+        <p>Precio: ${{ plan.precio }} • {{ plan.segmento }}</p>
+        <ion-badge [color]="plan.activo ? 'success' : 'danger'">
+          {{ plan.activo ? 'Activo' : 'Inactivo' }}
+        </ion-badge>
+        <ion-badge *ngIf="plan.destacado" color="warning">Destacado</ion-badge>
+      </ion-label>
+
+      <ion-buttons slot="end">
+        <ion-button (click)="editPlan(plan)">
+          <ion-icon name="create" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button color="danger" (click)="deletePlan(plan)">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-item>
+  </ion-list>
+
+  <!-- MENSAJE VACÍO -->
+  <ion-card *ngIf="!showForm && planes.length === 0 && !loading">
+    <ion-card-content class="ion-text-center">
+      <ion-icon name="document-text-outline" style="font-size: 64px; color: #ccc;"></ion-icon>
+      <h2>No hay planes creados</h2>
+      <p>Crea tu primer plan móvil</p>
+      <ion-button (click)="newPlan()">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Crear Plan
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

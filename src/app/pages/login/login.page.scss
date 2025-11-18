@@ -1,0 +1,48 @@
+
+.login-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.logo-container {
+  text-align: center;
+  margin-bottom: 30px;
+  
+  h1 {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--ion-color-primary);
+    margin: 10px 0;
+  }
+  
+  p {
+    color: #666;
+    margin: 5px 0;
+  }
+}
+
+ion-item {
+  margin-bottom: 15px;
+  --border-radius: 8px;
+  --background:black;
+  
+  &.item-has-focus {
+    --background: #fff;
+  }
+}
+
+ion-note {
+  padding-left: 16px;
+  font-size: 12px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+ion-button[type="submit"] {
+  margin-top: 20px;
+  height: 48px;
+  font-weight: 600;
+}
+
+// ========== pages/register/register.page.scss ==========

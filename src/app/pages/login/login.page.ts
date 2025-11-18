@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController, AlertController } from '@ionic/angular';
 import { AuthService } from 'src/app/core/services/auth';
+import { firstValueFrom, of } from 'rxjs';
+import { filter, take, timeout, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -55,17 +57,25 @@ export class LoginPage implements OnInit {
       return;
     }
 
-    // Esperar a que se cargue el perfil
-    setTimeout(() => {
-      const profile = this.authService.getCurrentProfile();
-      console.log('Perfil después del login:', profile);
-      
-      if (profile?.rol === 'asesor_comercial') {
+    // Esperar perfil de forma robusta (espera hasta que profile$ emita no-null o hace fallback)
+    try {
+      const profile = await firstValueFrom(
+        this.authService.profile$.pipe(
+          filter(p => p !== null),
+          take(1),
+          timeout(3000),
+          catchError(() => of(null))
+        )
+      );
+
+      if (profile && profile.rol === 'asesor_comercial') {
         this.router.navigate(['/home-asesor']);
       } else {
         this.router.navigate(['/home-usuario']);
       }
-    }, 1000);
+    } catch {
+      this.router.navigate(['/home-usuario']);
+    }
   }
 
   goToCatalogo() {

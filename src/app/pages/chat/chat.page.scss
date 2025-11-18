@@ -1,0 +1,37 @@
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+}
+
+.message {
+  max-width: 80%;
+  background: #eee;
+  padding: 8px 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.message.mine {
+  margin-left: auto;
+  background: var(--ion-color-primary);
+  color: white;
+}
+
+.sender {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.bubble {
+  font-size: 15px;
+  margin: 4px 0;
+}
+
+.time {
+  font-size: 10px;
+  opacity: 0.6;
+  text-align: right;
+}

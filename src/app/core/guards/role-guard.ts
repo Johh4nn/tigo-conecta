@@ -1,50 +1,27 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
-import { AuthService } from '../services/auth';
+import { CanActivate, Router, ActivatedRouteSnapshot } from '@angular/router';
+import { AuthService } from 'src/app/core/services/auth';
+import { firstValueFrom, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RoleGuard implements CanActivate {
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
-  async canActivate(route: ActivatedRouteSnapshot): Promise<boolean | UrlTree> {
-    const expectedRole = route.data['expectedRole'] as string;
-    
-    // Esperar a que se cargue el perfil
-    await this.waitForProfile();
-    
-    const profile = this.authService.getCurrentProfile();
-    
+  async canActivate(route: ActivatedRouteSnapshot) {
+    const expectedRole = route.data['role'] as string;
+    const profile = await firstValueFrom(this.auth.profile$);
     if (!profile) {
-      return this.router.createUrlTree(['/login']);
+      this.router.navigate(['/login']);
+      return false;
     }
-    
     if (profile.rol !== expectedRole) {
-      // Redirigir según el rol
-      if (profile.rol === 'asesor_comercial') {
-        return this.router.createUrlTree(['/home-asesor']);
-      } else {
-        return this.router.createUrlTree(['/home-usuario']);
-      }
+      // redirige según rol o a home
+      if (profile.rol === 'asesor_comercial') this.router.navigate(['/home-asesor']);
+      else this.router.navigate(['/home-usuario']);
+      return false;
     }
-    
     return true;
-  }
-
-  private waitForProfile(): Promise<void> {
-    return new Promise((resolve) => {
-      const checkProfile = () => {
-        if (this.authService.getCurrentProfile() !== null) {
-          resolve();
-        } else {
-          setTimeout(checkProfile, 100);
-        }
-      };
-      checkProfile();
-    });
   }
 }
